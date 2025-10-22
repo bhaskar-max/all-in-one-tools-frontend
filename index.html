@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All-in-One Tools</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🛠️ All-in-One Tools</h1>
+    <p style="opacity:0.9;">Your one-stop utility hub — Encrypt, Merge, and Convert with ease!</p>
+
+    <div class="tools">
+      <!-- 🔐 File Encryption / Decryption -->
+      <div class="tool-card">
+        <i data-lucide="lock"></i>
+        <h2>File Encryption / Decryption</h2>
+        <input type="file" id="encFile" />
+        <div style="margin-top:10px;">
+          <button id="encryptBtn">Encrypt</button>
+          <button id="decryptBtn">Decrypt</button>
+        </div>
+        <p id="encStatus" class="status"></p>
+      </div>
+
+      <!-- 📄 PDF Merger -->
+      <div class="tool-card">
+        <i data-lucide="file-text"></i>
+        <h2>PDF Merger</h2>
+        <input type="file" id="pdfFiles" multiple accept=".pdf" />
+        <button id="mergeBtn">Merge PDFs</button>
+        <p id="pdfStatus" class="status"></p>
+      </div>
+
+      <!-- 🖼️ Image Converter -->
+      <div class="tool-card">
+        <i data-lucide="image"></i>
+        <h2>Image Converter</h2>
+        <input type="file" id="imgFile" accept="image/png, image/jpeg" />
+        <select id="imgFormat">
+          <option value="png">PNG</option>
+          <option value="jpg">JPG</option>
+        </select>
+        <button id="convertBtn">Convert</button>
+        <p id="imgStatus" class="status"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Box -->
+  <div id="alertBox"></div>
+
+  <script src="app.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
