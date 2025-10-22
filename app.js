@@ -26,7 +26,7 @@ document.getElementById("encryptBtn").addEventListener("click", async () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "encrypted.enc";
+      a.download = `encrypted_${file.name}.enc`;
       a.click();
       showStatus("encStatus", "✅ File encrypted successfully!", "#44bd32");
     } else showStatus("encStatus", "❌ Encryption failed!", "#e84118");
@@ -45,6 +45,7 @@ document.getElementById("decryptBtn").addEventListener("click", async () => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("key", key);
+  formData.append("originalName", file.name.replace(/^encrypted_\d+_/, "").replace(/\.enc$/, "")); // send original name
 
   try {
     const res = await fetch(`${backendURL}/api/decrypt`, { method: "POST", body: formData });
@@ -53,7 +54,7 @@ document.getElementById("decryptBtn").addEventListener("click", async () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "decrypted_file";
+      a.download = file.name.replace(/^encrypted_\d+_/, "").replace(/\.enc$/, "");
       a.click();
       showStatus("encStatus", "✅ File decrypted successfully!", "#44bd32");
     } else showStatus("encStatus", "❌ Decryption failed!", "#e84118");
@@ -105,7 +106,8 @@ document.getElementById("convertBtn").addEventListener("click", async () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `converted.${format}`;
+      const originalName = file.name.split(".")[0];
+      a.download = `${originalName}.${format}`;
       a.click();
       showStatus("imgStatus", "✅ Image converted successfully!", "#44bd32");
     } else showStatus("imgStatus", "❌ Conversion failed!", "#e84118");
