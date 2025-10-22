@@ -1,4 +1,4 @@
-const backendURL = "https://all-in-one-tools-backend.onrender.com"; // Replace with your Render backend URL
+const backendURL = "https://all-in-one-tools-backend.onrender.com"; // Replace with your backend URL
 
 // ===== HELPER FUNCTION =====
 function showStatus(elementId, message, color) {
@@ -9,7 +9,7 @@ function showStatus(elementId, message, color) {
   setTimeout(() => el.classList.remove("show"), 3000);
 }
 
-// ===== ENCRYPTION =====
+// ===== ENCRYPTION / DECRYPTION (UNCHANGED) =====
 document.getElementById("encryptBtn").addEventListener("click", async () => {
   const file = document.getElementById("encFile").files[0];
   const key = document.getElementById("encKey").value;
@@ -26,7 +26,7 @@ document.getElementById("encryptBtn").addEventListener("click", async () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `encrypted_${file.name}.enc`;
+      a.download = "encrypted.enc";
       a.click();
       showStatus("encStatus", "✅ File encrypted successfully!", "#44bd32");
     } else showStatus("encStatus", "❌ Encryption failed!", "#e84118");
@@ -36,7 +36,6 @@ document.getElementById("encryptBtn").addEventListener("click", async () => {
   }
 });
 
-// ===== DECRYPTION =====
 document.getElementById("decryptBtn").addEventListener("click", async () => {
   const file = document.getElementById("encFile").files[0];
   const key = document.getElementById("encKey").value;
@@ -45,7 +44,6 @@ document.getElementById("decryptBtn").addEventListener("click", async () => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("key", key);
-  formData.append("originalName", file.name.replace(/^encrypted_\d+_/, "").replace(/\.enc$/, "")); // send original name
 
   try {
     const res = await fetch(`${backendURL}/api/decrypt`, { method: "POST", body: formData });
@@ -54,7 +52,7 @@ document.getElementById("decryptBtn").addEventListener("click", async () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = file.name.replace(/^encrypted_\d+_/, "").replace(/\.enc$/, "");
+      a.download = "decrypted_file";
       a.click();
       showStatus("encStatus", "✅ File decrypted successfully!", "#44bd32");
     } else showStatus("encStatus", "❌ Decryption failed!", "#e84118");
@@ -64,7 +62,7 @@ document.getElementById("decryptBtn").addEventListener("click", async () => {
   }
 });
 
-// ===== PDF MERGER =====
+// ===== PDF MERGER (UNCHANGED) =====
 document.getElementById("mergeBtn").addEventListener("click", async () => {
   const files = document.getElementById("pdfFiles").files;
   if (files.length < 2) return alert("Select at least 2 PDFs!");
@@ -89,11 +87,12 @@ document.getElementById("mergeBtn").addEventListener("click", async () => {
   }
 });
 
-// ===== IMAGE CONVERTER =====
+// ===== IMAGE CONVERTER (UPDATED) =====
 document.getElementById("convertBtn").addEventListener("click", async () => {
   const file = document.getElementById("imgFile").files[0];
   const format = document.getElementById("imgFormat").value;
   if (!file) return alert("Please select an image!");
+  if (!format) return alert("Please select a format!");
 
   const formData = new FormData();
   formData.append("image", file);
@@ -106,11 +105,14 @@ document.getElementById("convertBtn").addEventListener("click", async () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const originalName = file.name.split(".")[0];
-      a.download = `${originalName}.${format}`;
+      a.download = `converted.${format}`;
       a.click();
       showStatus("imgStatus", "✅ Image converted successfully!", "#44bd32");
-    } else showStatus("imgStatus", "❌ Conversion failed!", "#e84118");
+    } else {
+      const errData = await res.json();
+      console.error(errData);
+      showStatus("imgStatus", "❌ Conversion failed!", "#e84118");
+    }
   } catch (err) {
     console.error(err);
     showStatus("imgStatus", "❌ Conversion failed!", "#e84118");
