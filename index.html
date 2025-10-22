@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>All-in-One Tools</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -19,6 +19,7 @@
         <i data-lucide="lock"></i>
         <h2>File Encryption / Decryption</h2>
         <input type="file" id="encFile" />
+        <input type="text" id="encKey" placeholder="Enter secret key" />
         <div style="margin-top:10px;">
           <button id="encryptBtn">Encrypt</button>
           <button id="decryptBtn">Decrypt</button>
@@ -42,16 +43,13 @@
         <input type="file" id="imgFile" accept="image/png, image/jpeg" />
         <select id="imgFormat">
           <option value="png">PNG</option>
-          <option value="jpg">JPG</option>
+          <option value="jpeg">JPEG</option>
         </select>
         <button id="convertBtn">Convert</button>
         <p id="imgStatus" class="status"></p>
       </div>
     </div>
   </div>
-
-  <!-- Alert Box -->
-  <div id="alertBox"></div>
 
   <script src="app.js"></script>
   <script>

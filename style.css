@@ -1,95 +1,89 @@
+/* ========== Global ========== */
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(120deg, #2b5876, #4e4376);
-  color: white;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f6fa;
   margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  padding: 0;
 }
 
 .container {
-  text-align: center;
   max-width: 900px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 20px;
 }
 
 h1 {
-  font-size: 2.5em;
-  margin-bottom: 0.2em;
+  font-size: 2.2rem;
+  margin-bottom: 10px;
 }
 
+p {
+  font-size: 1rem;
+}
+
+/* ========== Tools Grid ========== */
 .tools {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
-  flex-wrap: wrap;
   margin-top: 30px;
 }
 
 .tool-card {
-  background: rgba(255, 255, 255, 0.1);
+  background: #fff;
   border-radius: 15px;
-  padding: 20px;
-  width: 250px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  padding: 25px 20px;
+  flex: 1 1 300px;
+  max-width: 350px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .tool-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15);
 }
 
+.tool-card i {
+  font-size: 2.5rem;
+  color: #4cd137;
+  margin-bottom: 15px;
+}
+
+.tool-card h2 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+/* ========== Buttons ========== */
 button {
-  background-color: #00c6ff;
+  background: #4cd137;
   border: none;
-  padding: 10px 15px;
-  color: white;
-  border-radius: 8px;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
   margin: 5px;
+  font-weight: bold;
+  transition: background 0.3s ease;
 }
 
 button:hover {
-  background-color: #0072ff;
+  background: #44bd32;
 }
 
-input, select {
-  width: 90%;
-  margin: 5px 0;
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
+/* ========== Status Messages ========== */
+.status {
+  font-weight: bold;
+  margin-top: 10px;
+  min-height: 20px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
 }
 
-#alertBox {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.8);
-  color: #fff;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 1em;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 1000;
-}
-#alertBox {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #27ae60;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 500;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: opacity 0.5s ease;
-  opacity: 0;
-  z-index: 1000;
+.status.show {
+  opacity: 1;
 }
