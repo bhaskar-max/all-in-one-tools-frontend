@@ -1,4 +1,4 @@
-const backendURL = "https://all-in-one-tools-backend.vercel.app";
+const backendURL = "https://all-in-one-tools-backend.onrender.com";
 
 
 // ===== ALERT FUNCTION =====
