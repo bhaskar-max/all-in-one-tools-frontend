@@ -8,53 +8,50 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>🛠️ All-in-One Tools</h1>
-    <p style="opacity:0.9;">Hello, Created By: <strong>Marri Bala Bhaskar</strong></p>
+    <p>Created by <strong>Marri Bala Bhaskar</strong></p>
+  </header>
 
-    <div class="tools">
-      <!-- 🔐 File Encryption / Decryption -->
-      <div class="tool-card">
-        <i data-lucide="lock"></i>
-        <h2>File Encryption / Decryption</h2>
-        <input type="file" id="encFile" />
-        <input type="text" id="encKey" placeholder="Enter secret key" />
-        <div style="margin-top:10px;">
-          <button id="encryptBtn">Encrypt</button>
-          <button id="decryptBtn">Decrypt</button>
-        </div>
-        <p id="encStatus"></p>
+  <div class="container">
+    <!-- ENCRYPTION / DECRYPTION -->
+    <div class="tool-card">
+      <i data-lucide="lock"></i>
+      <h2>File Encryption / Decryption</h2>
+      <input type="file" id="encFile" />
+      <input type="text" id="encKey" placeholder="Enter secret key" />
+      <div class="buttons">
+        <button id="encryptBtn">Encrypt</button>
+        <button id="decryptBtn">Decrypt</button>
       </div>
+      <p id="encStatus"></p>
+    </div>
 
-      <!-- 📄 PDF Merger -->
-      <div class="tool-card">
-        <i data-lucide="file-text"></i>
-        <h2>PDF Merger</h2>
-        <input type="file" id="pdfFiles" multiple accept=".pdf" />
-        <button id="mergeBtn">Merge PDFs</button>
-        <p id="pdfStatus"></p>
-      </div>
+    <!-- PDF MERGER -->
+    <div class="tool-card">
+      <i data-lucide="file-text"></i>
+      <h2>PDF Merger</h2>
+      <input type="file" id="pdfFiles" multiple accept=".pdf" />
+      <button id="mergeBtn">Merge PDFs</button>
+      <p id="pdfStatus"></p>
+    </div>
 
-      <!-- 🖼️ Image Converter -->
-      <div class="tool-card">
-        <i data-lucide="image"></i>
-        <h2>Image Converter</h2>
-        <input type="file" id="imgFile" accept="image/png, image/jpeg" />
-        <select id="imgFormat">
-          <option value="">Select format</option>
-          <option value="png">PNG</option>
-          <option value="jpeg">JPEG</option>
-          <option value="webp">WEBP</option>
-        </select>
-        <button id="convertBtn">Convert</button>
-        <p id="imgStatus"></p>
-      </div>
+    <!-- IMAGE CONVERTER -->
+    <div class="tool-card">
+      <i data-lucide="image"></i>
+      <h2>Image Converter</h2>
+      <input type="file" id="imgFile" accept="image/png, image/jpeg, image/webp" />
+      <select id="imgFormat">
+        <option value="png">PNG</option>
+        <option value="jpeg">JPEG</option>
+        <option value="webp">WEBP</option>
+      </select>
+      <button id="convertBtn">Convert</button>
+      <p id="imgStatus"></p>
     </div>
   </div>
 
   <script src="app.js"></script>
-  <script>
-    lucide.createIcons();
-  </script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>

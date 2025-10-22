@@ -1,4 +1,4 @@
-const backendURL = "https://all-in-one-tools-backend.onrender.com"; // Replace with your backend URL
+const backendURL = "https://all-in-one-tools-backend.onrender.com"; // Replace with your Render backend URL
 
 // ===== HELPER FUNCTION =====
 function showStatus(elementId, message, color) {
@@ -9,7 +9,7 @@ function showStatus(elementId, message, color) {
   setTimeout(() => el.classList.remove("show"), 3000);
 }
 
-// ===== ENCRYPTION / DECRYPTION (UNCHANGED) =====
+// ===== ENCRYPTION =====
 document.getElementById("encryptBtn").addEventListener("click", async () => {
   const file = document.getElementById("encFile").files[0];
   const key = document.getElementById("encKey").value;
@@ -23,10 +23,9 @@ document.getElementById("encryptBtn").addEventListener("click", async () => {
     const res = await fetch(`${backendURL}/api/encrypt`, { method: "POST", body: formData });
     if (res.ok) {
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = "encrypted.enc";
+      a.href = URL.createObjectURL(blob);
+      a.download = `encrypted_${file.name}.enc`;
       a.click();
       showStatus("encStatus", "✅ File encrypted successfully!", "#44bd32");
     } else showStatus("encStatus", "❌ Encryption failed!", "#e84118");
@@ -36,6 +35,7 @@ document.getElementById("encryptBtn").addEventListener("click", async () => {
   }
 });
 
+// ===== DECRYPTION =====
 document.getElementById("decryptBtn").addEventListener("click", async () => {
   const file = document.getElementById("encFile").files[0];
   const key = document.getElementById("encKey").value;
@@ -49,10 +49,10 @@ document.getElementById("decryptBtn").addEventListener("click", async () => {
     const res = await fetch(`${backendURL}/api/decrypt`, { method: "POST", body: formData });
     if (res.ok) {
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const origName = file.name.replace(".enc","");
       const a = document.createElement("a");
-      a.href = url;
-      a.download = "decrypted_file";
+      a.href = URL.createObjectURL(blob);
+      a.download = `decrypted_${origName}`;
       a.click();
       showStatus("encStatus", "✅ File decrypted successfully!", "#44bd32");
     } else showStatus("encStatus", "❌ Decryption failed!", "#e84118");
@@ -62,7 +62,7 @@ document.getElementById("decryptBtn").addEventListener("click", async () => {
   }
 });
 
-// ===== PDF MERGER (UNCHANGED) =====
+// ===== PDF MERGER =====
 document.getElementById("mergeBtn").addEventListener("click", async () => {
   const files = document.getElementById("pdfFiles").files;
   if (files.length < 2) return alert("Select at least 2 PDFs!");
@@ -74,9 +74,8 @@ document.getElementById("mergeBtn").addEventListener("click", async () => {
     const res = await fetch(`${backendURL}/api/pdf/merge`, { method: "POST", body: formData });
     if (res.ok) {
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = URL.createObjectURL(blob);
       a.download = "merged.pdf";
       a.click();
       showStatus("pdfStatus", "✅ PDFs merged successfully!", "#44bd32");
@@ -87,12 +86,11 @@ document.getElementById("mergeBtn").addEventListener("click", async () => {
   }
 });
 
-// ===== IMAGE CONVERTER (UPDATED) =====
+// ===== IMAGE CONVERTER =====
 document.getElementById("convertBtn").addEventListener("click", async () => {
   const file = document.getElementById("imgFile").files[0];
   const format = document.getElementById("imgFormat").value;
   if (!file) return alert("Please select an image!");
-  if (!format) return alert("Please select a format!");
 
   const formData = new FormData();
   formData.append("image", file);
@@ -102,17 +100,12 @@ document.getElementById("convertBtn").addEventListener("click", async () => {
     const res = await fetch(`${backendURL}/api/convert`, { method: "POST", body: formData });
     if (res.ok) {
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = URL.createObjectURL(blob);
       a.download = `converted.${format}`;
       a.click();
       showStatus("imgStatus", "✅ Image converted successfully!", "#44bd32");
-    } else {
-      const errData = await res.json();
-      console.error(errData);
-      showStatus("imgStatus", "❌ Conversion failed!", "#e84118");
-    }
+    } else showStatus("imgStatus", "❌ Conversion failed!", "#e84118");
   } catch (err) {
     console.error(err);
     showStatus("imgStatus", "❌ Conversion failed!", "#e84118");
