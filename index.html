@@ -1,86 +1,178 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>All-in-One Tools</title>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Libraries -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <!-- ✅ Google AdSense Script -->
-  <script async 
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6130464495775866"
-    crossorigin="anonymous">
-  </script>
+  <!-- ✅ Google AdSense Integration -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6130464495775866"
+     crossorigin="anonymous"></script>
 </head>
-
 <body>
-  <header>
-    <h1>🛠️ All-in-One Tools</h1>
-    <p>Created by <strong>Marri Bala Bhaskar</strong></p>
+  <header class="topbar">
+    <div class="brand">
+      <h1>🛠️ All-in-One Tools</h1>
+      <p class="subtitle">Utilities: Encrypt · Merge · Convert · More</p>
+    </div>
+    <div class="byline">Created by <strong>Marri Bala Bhaskar</strong></div>
   </header>
 
-  <!-- ✅ Top Ad Banner -->
-  <div class="ad-banner">
-    <ins class="adsbygoogle"
-         style="display:block; text-align:center;"
-         data-ad-client="ca-pub-6130464495775866"
-         data-ad-slot="1234567890"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </div>
-
-  <div class="container">
-    <!-- ENCRYPTION / DECRYPTION -->
-    <div class="tool-card">
-      <i data-lucide="lock"></i>
+  <main class="grid">
+    <!-- Existing Tools -->
+    <section class="card" id="card-encrypt">
+      <div class="card-icon"><i data-lucide="lock"></i></div>
       <h2>File Encryption / Decryption</h2>
-      <input type="file" id="encFile" />
-      <input type="text" id="encKey" placeholder="Enter secret key" />
-      <div class="buttons">
+      <input id="encFile" type="file" />
+      <input id="encKey" type="text" placeholder="Enter secret key" />
+      <div class="row">
         <button id="encryptBtn">Encrypt</button>
         <button id="decryptBtn">Decrypt</button>
       </div>
-      <p id="encStatus"></p>
-    </div>
+      <div class="status" id="encStatus"></div>
+    </section>
 
-    <!-- PDF MERGER -->
-    <div class="tool-card">
-      <i data-lucide="file-text"></i>
+    <section class="card" id="card-pdf">
+      <div class="card-icon"><i data-lucide="file-text"></i></div>
       <h2>PDF Merger</h2>
-      <input type="file" id="pdfFiles" multiple accept=".pdf" />
+      <input id="pdfFiles" type="file" multiple accept="application/pdf" />
       <button id="mergeBtn">Merge PDFs</button>
-      <p id="pdfStatus"></p>
-    </div>
+      <div class="status" id="pdfStatus"></div>
+    </section>
 
-    <!-- IMAGE CONVERTER -->
-    <div class="tool-card">
-      <i data-lucide="image"></i>
+    <section class="card" id="card-image">
+      <div class="card-icon"><i data-lucide="image"></i></div>
       <h2>Image Converter</h2>
-      <input type="file" id="imgFile" accept="image/png, image/jpeg, image/webp" />
-      <select id="imgFormat">
+      <input id="imgFile" type="file" accept="image/*" />
+      <select id="imgTarget">
+        <option value="jpeg">JPG</option>
         <option value="png">PNG</option>
-        <option value="jpeg">JPEG</option>
-        <option value="webp">WEBP</option>
       </select>
-      <button id="convertBtn">Convert</button>
-      <p id="imgStatus"></p>
-    </div>
-  </div>
+      <button id="convertImgBtn">Convert</button>
+      <div class="status" id="imgStatus"></div>
+    </section>
 
-  <!-- ✅ Bottom Ad Banner -->
-  <div class="ad-banner">
-    <ins class="adsbygoogle"
-         style="display:block; text-align:center; margin-top:20px;"
-         data-ad-client="ca-pub-6130464495775866"
-         data-ad-slot="9876543210"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </div>
+    <!-- 🆕 NEW TOOLS -->
 
-  <footer>
+    <!-- Text-to-Speech -->
+    <section class="card">
+      <div class="card-icon"><i data-lucide="volume-2"></i></div>
+      <h2>Text → Speech</h2>
+      <textarea id="ttsText" rows="4" placeholder="Type text to speak..."></textarea>
+      <select id="ttsVoice"></select>
+      <div class="row">
+        <button id="ttsSpeakBtn">Speak</button>
+        <button id="ttsStopBtn">Stop</button>
+      </div>
+      <div class="status" id="ttsStatus"></div>
+    </section>
+
+    <!-- QR Code Generator -->
+    <section class="card">
+      <div class="card-icon"><i data-lucide="qr-code"></i></div>
+      <h2>QR Code Generator</h2>
+      <input id="qrText" type="text" placeholder="Text or URL to encode" />
+      <div class="row">
+        <button id="qrGenBtn">Generate</button>
+        <button id="qrDownloadBtn">Download</button>
+      </div>
+      <div id="qrCanvas" style="margin-top:10px;"></div>
+      <div class="status" id="qrStatus"></div>
+    </section>
+
+    <!-- Password Generator -->
+    <section class="card">
+      <div class="card-icon"><i data-lucide="key"></i></div>
+      <h2>Password Generator</h2>
+      <div class="row">
+        <input id="pwdLen" type="number" min="4" max="64" value="16" />
+        <label><input id="pwdUpper" type="checkbox" checked /> A-Z</label>
+        <label><input id="pwdLower" type="checkbox" checked /> a-z</label>
+      </div>
+      <div class="row">
+        <label><input id="pwdDigits" type="checkbox" checked /> 0-9</label>
+        <label><input id="pwdSymbols" type="checkbox" /> Symbols</label>
+      </div>
+      <div class="row">
+        <button id="pwdGenBtn">Generate</button>
+        <button id="pwdCopyBtn">Copy</button>
+      </div>
+      <input id="pwdResult" readonly />
+    </section>
+
+    <!-- Image Compressor -->
+    <section class="card">
+      <div class="card-icon"><i data-lucide="sliders"></i></div>
+      <h2>Image Compressor</h2>
+      <input id="compFile" type="file" accept="image/*" />
+      <label>Quality: <input id="compQuality" type="range" min="10" max="100" value="80" /></label>
+      <div class="row">
+        <button id="compressBtn">Compress</button>
+        <button id="downloadCompressedBtn">Download</button>
+      </div>
+      <div class="preview"><img id="compPreview" alt="" /></div>
+      <div class="status" id="compStatus"></div>
+    </section>
+
+    <!-- Currency Converter -->
+    <section class="card">
+      <div class="card-icon"><i data-lucide="dollar-sign"></i></div>
+      <h2>Currency Converter</h2>
+      <div class="row">
+        <input id="curAmount" type="number" value="1" />
+        <select id="curFrom"></select>
+        <select id="curTo"></select>
+      </div>
+      <button id="curConvertBtn">Convert</button>
+      <div class="status" id="curResult"></div>
+    </section>
+
+    <!-- YouTube Embed (Preview only) -->
+    <section class="card">
+      <div class="card-icon"><i data-lucide="youtube"></i></div>
+      <h2>YouTube — Preview & Embed</h2>
+      <input id="ytUrl" type="text" placeholder="Paste YouTube URL" />
+      <div class="row">
+        <button id="ytPreviewBtn">Preview</button>
+        <button id="ytCopyBtn">Copy Link</button>
+      </div>
+      <div id="ytPreview" style="margin-top:12px;"></div>
+      <div class="status" id="ytStatus"></div>
+      <small class="muted">Note: downloading videos is not provided. This tool previews and embeds only.</small>
+    </section>
+
+    <!-- File Converter (TXT → PDF) -->
+    <section class="card">
+      <div class="card-icon"><i data-lucide="file"></i></div>
+      <h2>File Converter (TXT → PDF)</h2>
+      <input id="txtFile" type="file" accept=".txt" />
+      <button id="txtToPdfBtn">Convert to PDF</button>
+      <div class="status" id="txtConvStatus"></div>
+    </section>
+
+    <!-- AI Chat -->
+    <section class="card">
+      <div class="card-icon"><i data-lucide="cpu"></i></div>
+      <h2>AI Chat (optional)</h2>
+      <textarea id="aiPrompt" rows="4" placeholder="Ask something to the AI (requires backend)"></textarea>
+      <div class="row">
+        <button id="aiSendBtn">Send</button>
+        <button id="aiClearBtn">Clear</button>
+      </div>
+      <div class="aiResponse" id="aiResponse"></div>
+      <div class="status" id="aiStatus"></div>
+      <small class="muted">To enable: set OPENAI_API_KEY in backend and add /api/chat proxy route.</small>
+    </section>
+
+  </main>
+
+  <footer class="footer">
     <p>© 2025 Created by <strong>Marri Bala Bhaskar</strong></p>
   </footer>
 
