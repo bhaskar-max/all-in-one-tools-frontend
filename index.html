@@ -1,182 +1,306 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>All-in-One Tools</title>
-  <link rel="stylesheet" href="style.css" />
+// ===========================================================
+// All-in-One Tools Frontend Logic
+// Created by Marri Bala Bhaskar 💫
+// ===========================================================
 
-  <!-- Libraries -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+// -------------------- Helper --------------------
+const qs = (sel) => document.querySelector(sel);
+const qsa = (sel) => document.querySelectorAll(sel);
 
-  <!-- ✅ Google AdSense Integration -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6130464495775866"
-     crossorigin="anonymous"></script>
-</head>
-<body>
-  <header class="topbar">
-    <div class="brand">
-      <h1>🛠️ All-in-One Tools</h1>
-      <p class="subtitle">Utilities: Encrypt · Merge · Convert · More</p>
-    </div>
-    <div class="byline">Created by <strong>Marri Bala Bhaskar</strong></div>
-  </header>
+// ===========================================================
+// 🧩 PDF MERGER
+// ===========================================================
+qs("#mergeBtn").addEventListener("click", async () => {
+  const files = qs("#pdfFiles").files;
+  if (files.length < 2) {
+    alert("Please select at least 2 PDF files.");
+    return;
+  }
 
-  <main class="grid">
-    <!-- Existing Tools -->
-    <section class="card" id="card-encrypt">
-      <div class="card-icon"><i data-lucide="lock"></i></div>
-      <h2>File Encryption / Decryption</h2>
-      <input id="encFile" type="file" />
-      <input id="encKey" type="text" placeholder="Enter secret key" />
-      <div class="row">
-        <button id="encryptBtn">Encrypt</button>
-        <button id="decryptBtn">Decrypt</button>
-      </div>
-      <div class="status" id="encStatus"></div>
-    </section>
+  const formData = new FormData();
+  for (let f of files) formData.append("pdfs", f);
 
-    <section class="card" id="card-pdf">
-      <div class="card-icon"><i data-lucide="file-text"></i></div>
-      <h2>PDF Merger</h2>
-      <input id="pdfFiles" type="file" multiple accept="application/pdf" />
-      <button id="mergeBtn">Merge PDFs</button>
-      <div class="status" id="pdfStatus"></div>
-    </section>
+  try {
+    qs("#mergeResult").textContent = "Merging PDFs...";
+    const res = await fetch("https://all-in-one-tools-backend.onrender.com/merge", {
+      method: "POST",
+      body: formData,
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "merged.pdf";
+    link.click();
+    qs("#mergeResult").textContent = "✅ Merged PDF downloaded successfully!";
+  } catch (err) {
+    console.error(err);
+    qs("#mergeResult").textContent = "❌ Error merging PDFs.";
+  }
+});
 
-    <section class="card" id="card-image">
-      <div class="card-icon"><i data-lucide="image"></i></div>
-      <h2>Image Converter</h2>
-      <input id="imgFile" type="file" accept="image/*" />
-      <select id="imgTarget">
-        <option value="jpeg">JPG</option>
-        <option value="png">PNG</option>
-      </select>
-      <button id="convertImgBtn">Convert</button>
-      <div class="status" id="imgStatus"></div>
-    </section>
+// ===========================================================
+// 🔐 FILE ENCRYPTION / DECRYPTION
+// ===========================================================
+qs("#encryptBtn").addEventListener("click", async () => {
+  const file = qs("#encFile").files[0];
+  const password = qs("#encPassword").value;
+  if (!file || !password) {
+    alert("Please select a file and enter a password.");
+    return;
+  }
 
-    <!-- 🆕 NEW TOOLS -->
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("password", password);
 
-    <!-- Text-to-Speech -->
-    <section class="card">
-      <div class="card-icon"><i data-lucide="volume-2"></i></div>
-      <h2>Text → Speech</h2>
-      <textarea id="ttsText" rows="4" placeholder="Type text to speak..."></textarea>
-      <select id="ttsVoice"></select>
-      <div class="row">
-        <button id="ttsSpeakBtn">Speak</button>
-        <button id="ttsStopBtn">Stop</button>
-      </div>
-      <div class="status" id="ttsStatus"></div>
-    </section>
+  qs("#encResult").textContent = "Encrypting...";
+  const res = await fetch("https://all-in-one-tools-backend.onrender.com/encrypt", {
+    method: "POST",
+    body: formData,
+  });
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `encrypted_${file.name}.enc`;
+  a.click();
+  qs("#encResult").textContent = "✅ File encrypted successfully!";
+});
 
-    <!-- QR Code Generator -->
-    <section class="card">
-      <div class="card-icon"><i data-lucide="qr-code"></i></div>
-      <h2>QR Code Generator</h2>
-      <input id="qrText" type="text" placeholder="Text or URL to encode" />
-      <div class="row">
-        <button id="qrGenBtn">Generate</button>
-        <button id="qrDownloadBtn">Download</button>
-      </div>
-      <div id="qrCanvas" style="margin-top:10px;"></div>
-      <div class="status" id="qrStatus"></div>
-    </section>
+qs("#decryptBtn").addEventListener("click", async () => {
+  const file = qs("#decFile").files[0];
+  const password = qs("#decPassword").value;
+  if (!file || !password) {
+    alert("Please select a file and enter the password used for encryption.");
+    return;
+  }
 
-    <!-- Password Generator -->
-    <section class="card">
-      <div class="card-icon"><i data-lucide="key"></i></div>
-      <h2>Password Generator</h2>
-      <div class="row">
-        <input id="pwdLen" type="number" min="4" max="64" value="16" />
-        <label><input id="pwdUpper" type="checkbox" checked /> A-Z</label>
-        <label><input id="pwdLower" type="checkbox" checked /> a-z</label>
-      </div>
-      <div class="row">
-        <label><input id="pwdDigits" type="checkbox" checked /> 0-9</label>
-        <label><input id="pwdSymbols" type="checkbox" /> Symbols</label>
-      </div>
-      <div class="row">
-        <button id="pwdGenBtn">Generate</button>
-        <button id="pwdCopyBtn">Copy</button>
-      </div>
-      <input id="pwdResult" readonly />
-    </section>
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("password", password);
 
-    <!-- Image Compressor -->
-    <section class="card">
-      <div class="card-icon"><i data-lucide="sliders"></i></div>
-      <h2>Image Compressor</h2>
-      <input id="compFile" type="file" accept="image/*" />
-      <label>Quality: <input id="compQuality" type="range" min="10" max="100" value="80" /></label>
-      <div class="row">
-        <button id="compressBtn">Compress</button>
-        <button id="downloadCompressedBtn">Download</button>
-      </div>
-      <div class="preview"><img id="compPreview" alt="" /></div>
-      <div class="status" id="compStatus"></div>
-    </section>
+  qs("#decResult").textContent = "Decrypting...";
+  const res = await fetch("https://all-in-one-tools-backend.onrender.com/decrypt", {
+    method: "POST",
+    body: formData,
+  });
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `decrypted_${file.name.replace(".enc", "")}`;
+  a.click();
+  qs("#decResult").textContent = "✅ File decrypted successfully!";
+});
 
-    <!-- Currency Converter -->
-    <section class="card">
-      <div class="card-icon"><i data-lucide="dollar-sign"></i></div>
-      <h2>Currency Converter</h2>
-      <div class="row">
-        <input id="curAmount" type="number" value="1" />
-        <select id="curFrom"></select>
-        <select id="curTo"></select>
-      </div>
-      <button id="curConvertBtn">Convert</button>
-      <div class="status" id="curResult"></div>
-    </section>
+// ===========================================================
+// 🖼️ IMAGE CONVERTER
+// ===========================================================
+qs("#convertImgBtn").addEventListener("click", async () => {
+  const file = qs("#imgFile").files[0];
+  const format = qs("#imgFormat").value;
 
-    <!-- YouTube Embed (Preview only) -->
-    <section class="card">
-      <div class="card-icon"><i data-lucide="youtube"></i></div>
-      <h2>YouTube — Preview & Embed</h2>
-      <input id="ytUrl" type="text" placeholder="Paste YouTube URL" />
-      <div class="row">
-        <button id="ytPreviewBtn">Preview</button>
-        <button id="ytCopyBtn">Copy Link</button>
-      </div>
-      <div id="ytPreview" style="margin-top:12px;"></div>
-      <div class="status" id="ytStatus"></div>
-      <small class="muted">Note: downloading videos is not provided. This tool previews and embeds only.</small>
-    </section>
+  if (!file || !format) {
+    alert("Please select an image and format.");
+    return;
+  }
 
-    <!-- File Converter (TXT → PDF) -->
-    <section class="card">
-      <div class="card-icon"><i data-lucide="file"></i></div>
-      <h2>File Converter (TXT → PDF)</h2>
-      <input id="txtFile" type="file" accept=".txt" />
-      <button id="txtToPdfBtn">Convert to PDF</button>
-      <div class="status" id="txtConvStatus"></div>
-    </section>
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("format", format);
 
-    <!-- AI Chat -->
-    <section class="card">
-      <div class="card-icon"><i data-lucide="cpu"></i></div>
-      <h2>AI Chat (optional)</h2>
-      <textarea id="aiPrompt" rows="4" placeholder="Ask something to the AI (requires backend)"></textarea>
-      <div class="row">
-        <button id="aiSendBtn">Send</button>
-        <button id="aiClearBtn">Clear</button>
-      </div>
-      <div class="aiResponse" id="aiResponse"></div>
-      <div class="status" id="aiStatus"></div>
-      <small class="muted">To enable: set OPENAI_API_KEY in backend and add /api/chat proxy route.</small>
-    </section>
+  qs("#imgResult").textContent = "Converting...";
+  try {
+    const res = await fetch("https://all-in-one-tools-backend.onrender.com/convert-image", {
+      method: "POST",
+      body: formData,
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `converted.${format}`;
+    link.click();
+    qs("#imgResult").textContent = "✅ Image converted successfully!";
+  } catch (err) {
+    console.error(err);
+    qs("#imgResult").textContent = "❌ Conversion failed.";
+  }
+});
 
-  </main>
+// ===========================================================
+// 🧠 AI CHAT TOOL
+// ===========================================================
+qs("#aiSendBtn").addEventListener("click", async () => {
+  const input = qs("#aiInput").value.trim();
+  const output = qs("#aiOutput");
+  if (!input) return alert("Enter a prompt!");
 
-  <footer class="footer">
-    <p>© 2025 Created by <strong>Marri Bala Bhaskar</strong></p>
-  </footer>
+  output.textContent = "🤖 Thinking...";
+  try {
+    const res = await fetch("https://all-in-one-tools-backend.onrender.com/ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: input }),
+    });
+    const data = await res.json();
+    output.textContent = "💬 " + data.reply;
+  } catch (err) {
+    console.error(err);
+    output.textContent = "❌ AI service unavailable.";
+  }
+});
 
-  <script src="app.js"></script>
-  <script>lucide.createIcons();</script>
-</body>
-</html>
+// ===========================================================
+// 🔊 TEXT TO SPEECH
+// ===========================================================
+qs("#ttsBtn").addEventListener("click", () => {
+  const text = qs("#ttsInput").value;
+  if (!text) return alert("Enter text to speak!");
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-US";
+  speechSynthesis.speak(speech);
+});
+
+// ===========================================================
+// 🔐 PASSWORD GENERATOR
+// ===========================================================
+qs("#passGenBtn").addEventListener("click", () => {
+  const len = parseInt(qs("#passLength").value) || 12;
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+  let pass = "";
+  for (let i = 0; i < len; i++)
+    pass += chars[Math.floor(Math.random() * chars.length)];
+  qs("#passResult").value = pass;
+});
+
+// ===========================================================
+// 📦 IMAGE COMPRESSOR
+// ===========================================================
+qs("#compressBtn").addEventListener("click", () => {
+  const fileInput = qs("#compressFile");
+  const quality = parseFloat(qs("#compressQuality").value);
+  if (!fileInput.files.length) return alert("Select an image!");
+
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.src = e.target.result;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(
+        (blob) => {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `compressed_${file.name}`;
+          a.click();
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+  };
+  reader.readAsDataURL(file);
+});
+
+// ===========================================================
+// ✅ FIXED 💱 CURRENCY CONVERTER
+// ===========================================================
+document.addEventListener("DOMContentLoaded", async () => {
+  const fromSel = qs("#curFrom");
+  const toSel = qs("#curTo");
+  const amountInput = qs("#curAmount");
+  const convertBtn = qs("#curConvertBtn");
+  const result = qs("#curResult");
+
+  const API_URL = "https://api.exchangerate.host/latest";
+
+  async function loadCurrencies() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const codes = Object.keys(data.rates);
+
+      fromSel.innerHTML = "";
+      toSel.innerHTML = "";
+
+      codes.forEach((code) => {
+        const opt1 = document.createElement("option");
+        opt1.value = code;
+        opt1.textContent = code;
+        const opt2 = opt1.cloneNode(true);
+        fromSel.appendChild(opt1);
+        toSel.appendChild(opt2);
+      });
+
+      fromSel.value = "USD";
+      toSel.value = "INR";
+    } catch (err) {
+      console.error("Currency API failed:", err);
+      result.textContent = "❌ Failed to load currencies.";
+    }
+  }
+
+  async function convertCurrency() {
+    const amount = parseFloat(amountInput.value);
+    const from = fromSel.value;
+    const to = toSel.value;
+
+    if (isNaN(amount) || amount <= 0) {
+      result.textContent = "Enter a valid amount!";
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}?base=${from}`);
+      const data = await res.json();
+      const rate = data.rates[to];
+      const converted = (amount * rate).toFixed(2);
+      result.textContent = `${amount} ${from} = ${converted} ${to}`;
+    } catch (err) {
+      console.error(err);
+      result.textContent = "❌ Conversion failed.";
+    }
+  }
+
+  await loadCurrencies();
+  convertBtn.addEventListener("click", convertCurrency);
+});
+
+// ===========================================================
+// 📦 QR CODE GENERATOR
+// ===========================================================
+qs("#qrBtn").addEventListener("click", () => {
+  const text = qs("#qrText").value;
+  const qrContainer = qs("#qrResult");
+  if (!text) return alert("Enter text or URL!");
+
+  qrContainer.innerHTML = "";
+  new QRCode(qrContainer, {
+    text: text,
+    width: 180,
+    height: 180,
+  });
+});
+
+// ===========================================================
+// 🎬 YOUTUBE PREVIEW TOOL
+// ===========================================================
+qs("#ytBtn").addEventListener("click", () => {
+  const url = qs("#ytUrl").value.trim();
+  const ytPreview = qs("#ytPreview");
+  if (!url.includes("youtube.com") && !url.includes("youtu.be"))
+    return alert("Enter a valid YouTube URL!");
+
+  const videoId = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
+  ytPreview.innerHTML = `<iframe width="300" height="200"
+    src="https://www.youtube.com/embed/${videoId}"
+    frameborder="0" allowfullscreen></iframe>`;
+});

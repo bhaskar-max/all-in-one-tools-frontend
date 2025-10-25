@@ -1,260 +1,306 @@
-// CONFIG
-const backendURL = "https://all-in-one-tools-backend.onrender.com"; // <- set your backend URL
+// ===========================================================
+// All-in-One Tools Frontend Logic
+// Created by Marri Bala Bhaskar 💫
+// ===========================================================
 
-// small helper for status messages
-function showStatus(id, msg, color = "#2f8a5f") {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = msg;
-  el.style.color = color;
-  el.classList.add("show");
-  setTimeout(()=> el.classList.remove("show"), 4000);
-}
+// -------------------- Helper --------------------
+const qs = (sel) => document.querySelector(sel);
+const qsa = (sel) => document.querySelectorAll(sel);
 
-/* ------------------------------
-   Existing tools handlers (keep your current code)
-   - encryptBtn, decryptBtn, mergeBtn, convertImgBtn etc.
-   Assume these event listeners already present in your site and unchanged.
-   ------------------------------ */
+// ===========================================================
+// 🧩 PDF MERGER
+// ===========================================================
+qs("#mergeBtn").addEventListener("click", async () => {
+  const files = qs("#pdfFiles").files;
+  if (files.length < 2) {
+    alert("Please select at least 2 PDF files.");
+    return;
+  }
 
-/* ------------------------------
-   New Tools
-   ------------------------------ */
+  const formData = new FormData();
+  for (let f of files) formData.append("pdfs", f);
 
-/* 1) Text-to-Speech (browser) */
-async function populateVoices() {
-  const sel = document.getElementById("ttsVoice");
-  sel.innerHTML = "";
-  const voices = speechSynthesis.getVoices();
-  voices.forEach(v=>{
-    const o = document.createElement("option");
-    o.value = v.name;
-    o.textContent = `${v.name} (${v.lang})`;
-    sel.appendChild(o);
+  try {
+    qs("#mergeResult").textContent = "Merging PDFs...";
+    const res = await fetch("https://all-in-one-tools-backend-1.onrender.com", {
+      method: "POST",
+      body: formData,
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "merged.pdf";
+    link.click();
+    qs("#mergeResult").textContent = "✅ Merged PDF downloaded successfully!";
+  } catch (err) {
+    console.error(err);
+    qs("#mergeResult").textContent = "❌ Error merging PDFs.";
+  }
+});
+
+// ===========================================================
+// 🔐 FILE ENCRYPTION / DECRYPTION
+// ===========================================================
+qs("#encryptBtn").addEventListener("click", async () => {
+  const file = qs("#encFile").files[0];
+  const password = qs("#encPassword").value;
+  if (!file || !password) {
+    alert("Please select a file and enter a password.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("password", password);
+
+  qs("#encResult").textContent = "Encrypting...";
+  const res = await fetch("https://all-in-one-tools-backend-1.onrender.com/encrypt", {
+    method: "POST",
+    body: formData,
   });
-}
-populateVoices();
-if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = populateVoices;
-
-document.getElementById("ttsSpeakBtn").addEventListener("click", ()=>{
-  const text = document.getElementById("ttsText").value.trim();
-  if(!text) return showStatus("ttsStatus","Type some text first","crimson");
-  const voiceName = document.getElementById("ttsVoice").value;
-  const u = new SpeechSynthesisUtterance(text);
-  if (voiceName) {
-    const v = speechSynthesis.getVoices().find(x=>x.name===voiceName);
-    if(v) u.voice = v;
-  }
-  speechSynthesis.speak(u);
-  showStatus("ttsStatus","Speaking...");
-});
-document.getElementById("ttsStopBtn").addEventListener("click", ()=>{
-  speechSynthesis.cancel();
-  showStatus("ttsStatus","Stopped","#888");
-});
-
-/* 2) QR Code Generator (qrcode lib) */
-document.getElementById("qrGenBtn").addEventListener("click", async ()=>{
-  const text = document.getElementById("qrText").value.trim();
-  const el = document.getElementById("qrCanvas");
-  el.innerHTML = "";
-  if(!text) return showStatus("qrStatus","Enter text or URL","crimson");
-  try{
-    await QRCode.toCanvas(el, text, { width: 240 });
-    showStatus("qrStatus","QR generated");
-  }catch(e){
-    console.error(e); showStatus("qrStatus","QR generation failed","crimson");
-  }
-});
-document.getElementById("qrDownloadBtn").addEventListener("click", ()=>{
-  const el = document.querySelector("#qrCanvas canvas");
-  if(!el) return showStatus("qrStatus","Generate first","crimson");
-  const url = el.toDataURL("image/png");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = "qr.png"; a.click();
+  a.href = url;
+  a.download = `encrypted_${file.name}.enc`;
+  a.click();
+  qs("#encResult").textContent = "✅ File encrypted successfully!";
 });
 
-/* 3) Password Generator */
-function generatePassword(len, opts){
-  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const lower = "abcdefghijklmnopqrstuvwxyz";
-  const digits = "0123456789";
-  const symbols = "!@#$%^&*()-_=+[]{};:,.<>/?";
-  let pool = "";
-  if(opts.upper) pool += upper;
-  if(opts.lower) pool += lower;
-  if(opts.digits) pool += digits;
-  if(opts.symbols) pool += symbols;
-  if(!pool) return "";
-  let pw = "";
-  for(let i=0;i<len;i++) pw += pool[Math.floor(Math.random()*pool.length)];
-  return pw;
-}
-document.getElementById("pwdGenBtn").addEventListener("click", ()=>{
-  const len = Number(document.getElementById("pwdLen").value) || 16;
-  const opts = {
-    upper: document.getElementById("pwdUpper").checked,
-    lower: document.getElementById("pwdLower").checked,
-    digits: document.getElementById("pwdDigits").checked,
-    symbols: document.getElementById("pwdSymbols").checked
-  };
-  const p = generatePassword(len, opts);
-  document.getElementById("pwdResult").value = p;
-});
-document.getElementById("pwdCopyBtn").addEventListener("click", async ()=>{
-  const v = document.getElementById("pwdResult").value;
-  if(!v) return showStatus("pwdResult","No password to copy","crimson");
-  await navigator.clipboard.writeText(v);
-  showStatus("pwdResult","Password copied");
+qs("#decryptBtn").addEventListener("click", async () => {
+  const file = qs("#decFile").files[0];
+  const password = qs("#decPassword").value;
+  if (!file || !password) {
+    alert("Please select a file and enter the password used for encryption.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("password", password);
+
+  qs("#decResult").textContent = "Decrypting...";
+  const res = await fetch("https://all-in-one-tools-backend-1.onrender.com/decrypt", {
+    method: "POST",
+    body: formData,
+  });
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `decrypted_${file.name.replace(".enc", "")}`;
+  a.click();
+  qs("#decResult").textContent = "✅ File decrypted successfully!";
 });
 
-/* 4) Image Compressor (client-side) */
-let lastCompressedBlob = null;
-document.getElementById("compressBtn").addEventListener("click", ()=>{
-  const f = document.getElementById("compFile").files[0];
-  if(!f) return showStatus("compStatus","Select an image","crimson");
-  const quality = Number(document.getElementById("compQuality").value) / 100;
+// ===========================================================
+// 🖼️ IMAGE CONVERTER
+// ===========================================================
+qs("#convertImgBtn").addEventListener("click", async () => {
+  const file = qs("#imgFile").files[0];
+  const format = qs("#imgFormat").value;
+
+  if (!file || !format) {
+    alert("Please select an image and format.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("format", format);
+
+  qs("#imgResult").textContent = "Converting...";
+  try {
+    const res = await fetch("https://all-in-one-tools-backend-1.onrender.com/convert-image", {
+      method: "POST",
+      body: formData,
+    });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `converted.${format}`;
+    link.click();
+    qs("#imgResult").textContent = "✅ Image converted successfully!";
+  } catch (err) {
+    console.error(err);
+    qs("#imgResult").textContent = "❌ Conversion failed.";
+  }
+});
+
+// ===========================================================
+// 🧠 AI CHAT TOOL
+// ===========================================================
+qs("#aiSendBtn").addEventListener("click", async () => {
+  const input = qs("#aiInput").value.trim();
+  const output = qs("#aiOutput");
+  if (!input) return alert("Enter a prompt!");
+
+  output.textContent = "🤖 Thinking...";
+  try {
+    const res = await fetch("https://all-in-one-tools-backend-1.onrender.com/ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: input }),
+    });
+    const data = await res.json();
+    output.textContent = "💬 " + data.reply;
+  } catch (err) {
+    console.error(err);
+    output.textContent = "❌ AI service unavailable.";
+  }
+});
+
+// ===========================================================
+// 🔊 TEXT TO SPEECH
+// ===========================================================
+qs("#ttsBtn").addEventListener("click", () => {
+  const text = qs("#ttsInput").value;
+  if (!text) return alert("Enter text to speak!");
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-US";
+  speechSynthesis.speak(speech);
+});
+
+// ===========================================================
+// 🔐 PASSWORD GENERATOR
+// ===========================================================
+qs("#passGenBtn").addEventListener("click", () => {
+  const len = parseInt(qs("#passLength").value) || 12;
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+  let pass = "";
+  for (let i = 0; i < len; i++)
+    pass += chars[Math.floor(Math.random() * chars.length)];
+  qs("#passResult").value = pass;
+});
+
+// ===========================================================
+// 📦 IMAGE COMPRESSOR
+// ===========================================================
+qs("#compressBtn").addEventListener("click", () => {
+  const fileInput = qs("#compressFile");
+  const quality = parseFloat(qs("#compressQuality").value);
+  if (!fileInput.files.length) return alert("Select an image!");
+
+  const file = fileInput.files[0];
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = (e) => {
     const img = new Image();
+    img.src = e.target.result;
     img.onload = () => {
       const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
       canvas.width = img.width;
       canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img,0,0);
-      canvas.toBlob(blob => {
-        lastCompressedBlob = blob;
-        document.getElementById("compPreview").src = URL.createObjectURL(blob);
-        showStatus("compStatus","Compressed successfully");
-      }, 'image/jpeg', quality);
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(
+        (blob) => {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `compressed_${file.name}`;
+          a.click();
+        },
+        "image/jpeg",
+        quality
+      );
     };
-    img.src = reader.result;
   };
-  reader.readAsDataURL(f);
-});
-document.getElementById("downloadCompressedBtn").addEventListener("click", ()=>{
-  if(!lastCompressedBlob) return showStatus("compStatus","Compress first","crimson");
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(lastCompressedBlob);
-  a.download = "compressed.jpg";
-  a.click();
+  reader.readAsDataURL(file);
 });
 
-/* 5) Currency converter (uses exchangerate.host free API) */
-async function populateCurrencySelects(){
-  try{
-    const res = await fetch("https://api.exchangerate.host/symbols");
-    const json = await res.json();
-    const symbols = Object.keys(json.symbols);
-    const from = document.getElementById("curFrom");
-    const to = document.getElementById("curTo");
-    symbols.forEach(s=>{
-      const o1 = document.createElement("option"); o1.value=s; o1.textContent=s;
-      const o2 = document.createElement("option"); o2.value=s; o2.textContent=s;
-      from.appendChild(o1); to.appendChild(o2);
-    });
-    from.value = "USD"; to.value = "INR";
-  }catch(e){ console.error(e) }
-}
-populateCurrencySelects();
+// ===========================================================
+// ✅ FIXED 💱 CURRENCY CONVERTER
+// ===========================================================
+document.addEventListener("DOMContentLoaded", async () => {
+  const fromSel = qs("#curFrom");
+  const toSel = qs("#curTo");
+  const amountInput = qs("#curAmount");
+  const convertBtn = qs("#curConvertBtn");
+  const result = qs("#curResult");
 
-document.getElementById("curConvertBtn").addEventListener("click", async ()=>{
-  const amt = Number(document.getElementById("curAmount").value) || 1;
-  const from = document.getElementById("curFrom").value;
-  const to = document.getElementById("curTo").value;
-  if(!from||!to) return showStatus("curResult","Select currencies","crimson");
-  try{
-    showStatus("curResult","Fetching rate...", "#2b7de9");
-    const res = await fetch(`https://api.exchangerate.host/convert?from=${from}&to=${to}&amount=${amt}`);
-    const j = await res.json();
-    if(j && j.result!=null){
-      showStatus("curResult", `${amt} ${from} = ${j.result.toFixed(4)} ${to}`, "#0a7a5f");
-    }else showStatus("curResult","Conversion failed","crimson");
-  }catch(e){ console.error(e); showStatus("curResult","Conversion failed","crimson"); }
-});
+  const API_URL = "https://api.exchangerate.host/latest";
 
-/* 6) YouTube Preview & Embed (NO downloader) */
-function parseYouTubeId(url){
-  try{
-    const u = new URL(url);
-    if(u.hostname.includes("youtube.com")) return u.searchParams.get("v");
-    if(u.hostname.includes("youtu.be")) return u.pathname.slice(1);
-  }catch(e){}
-  return null;
-}
-document.getElementById("ytPreviewBtn").addEventListener("click", ()=>{
-  const url = document.getElementById("ytUrl").value.trim();
-  const id = parseYouTubeId(url);
-  const target = document.getElementById("ytPreview");
-  target.innerHTML = "";
-  if(!id) return showStatus("ytStatus","Invalid YouTube URL","crimson");
-  const iframe = document.createElement("iframe");
-  iframe.width = "100%"; iframe.height = "200";
-  iframe.src = `https://www.youtube.com/embed/${id}`;
-  iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-  iframe.allowFullscreen = true;
-  target.appendChild(iframe);
-  showStatus("ytStatus","Preview loaded");
-});
-document.getElementById("ytCopyBtn").addEventListener("click", ()=>{
-  const url = document.getElementById("ytUrl").value.trim();
-  if(!url) return showStatus("ytStatus","Paste a YouTube URL","crimson");
-  navigator.clipboard.writeText(url);
-  showStatus("ytStatus","Link copied");
-});
+  async function loadCurrencies() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const codes = Object.keys(data.rates);
 
-/* 7) File converter: TXT -> PDF using jsPDF */
-document.getElementById("txtToPdfBtn").addEventListener("click", async ()=>{
-  const f = document.getElementById("txtFile").files[0];
-  if(!f) return showStatus("txtConvStatus","Choose a TXT file","crimson");
-  const txt = await f.text();
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({unit:'pt', format:'a4'});
-  const margin = 40;
-  const lineHeight = 14;
-  const pageWidth = doc.internal.pageSize.getWidth() - margin*2;
-  const words = doc.splitTextToSize(txt, pageWidth);
-  doc.text(words, margin, margin);
-  const blob = doc.output('blob');
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = f.name.replace(/\.txt$/i,"") + ".pdf";
-  a.click();
-  showStatus("txtConvStatus","Converted to PDF");
-});
+      fromSel.innerHTML = "";
+      toSel.innerHTML = "";
 
-/* 8) AI Chat (frontend) -> backend /api/chat proxy (optional)
-   - If your backend has a /api/chat route that proxies to OpenAI, this will work.
-   - Otherwise, it shows an informative message.
-*/
-document.getElementById("aiSendBtn").addEventListener("click", async ()=>{
-  const prompt = document.getElementById("aiPrompt").value.trim();
-  if(!prompt) return showStatus("aiStatus","Type a prompt","crimson");
-  showStatus("aiStatus","Thinking...", "#2b7de9");
-  try{
-    const res = await fetch(`${backendURL}/api/chat`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ prompt })
-    });
-    if(res.ok){
-      const j = await res.json();
-      document.getElementById("aiResponse").textContent = j.text || JSON.stringify(j);
-      showStatus("aiStatus","Response received");
-    } else {
-      const txt = await res.text();
-      document.getElementById("aiResponse").textContent = "AI backend not enabled. " + txt;
-      showStatus("aiStatus","No backend", "crimson");
+      codes.forEach((code) => {
+        const opt1 = document.createElement("option");
+        opt1.value = code;
+        opt1.textContent = code;
+        const opt2 = opt1.cloneNode(true);
+        fromSel.appendChild(opt1);
+        toSel.appendChild(opt2);
+      });
+
+      fromSel.value = "USD";
+      toSel.value = "INR";
+    } catch (err) {
+      console.error("Currency API failed:", err);
+      result.textContent = "❌ Failed to load currencies.";
     }
-  }catch(e){ console.error(e); showStatus("aiStatus","AI request failed","crimson"); }
-});
-document.getElementById("aiClearBtn").addEventListener("click", ()=>{
-  document.getElementById("aiResponse").textContent = "";
-  document.getElementById("aiPrompt").value = "";
+  }
+
+  async function convertCurrency() {
+    const amount = parseFloat(amountInput.value);
+    const from = fromSel.value;
+    const to = toSel.value;
+
+    if (isNaN(amount) || amount <= 0) {
+      result.textContent = "Enter a valid amount!";
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}?base=${from}`);
+      const data = await res.json();
+      const rate = data.rates[to];
+      const converted = (amount * rate).toFixed(2);
+      result.textContent = `${amount} ${from} = ${converted} ${to}`;
+    } catch (err) {
+      console.error(err);
+      result.textContent = "❌ Conversion failed.";
+    }
+  }
+
+  await loadCurrencies();
+  convertBtn.addEventListener("click", convertCurrency);
 });
 
-/* initialize search-friendly defaults/sample values */
-document.addEventListener("DOMContentLoaded", ()=>{
-  // keep existing initializations if any
+// ===========================================================
+// 📦 QR CODE GENERATOR
+// ===========================================================
+qs("#qrBtn").addEventListener("click", () => {
+  const text = qs("#qrText").value;
+  const qrContainer = qs("#qrResult");
+  if (!text) return alert("Enter text or URL!");
+
+  qrContainer.innerHTML = "";
+  new QRCode(qrContainer, {
+    text: text,
+    width: 180,
+    height: 180,
+  });
+});
+
+// ===========================================================
+// 🎬 YOUTUBE PREVIEW TOOL
+// ===========================================================
+qs("#ytBtn").addEventListener("click", () => {
+  const url = qs("#ytUrl").value.trim();
+  const ytPreview = qs("#ytPreview");
+  if (!url.includes("youtube.com") && !url.includes("youtu.be"))
+    return alert("Enter a valid YouTube URL!");
+
+  const videoId = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
+  ytPreview.innerHTML = `<iframe width="300" height="200"
+    src="https://www.youtube.com/embed/${videoId}"
+    frameborder="0" allowfullscreen></iframe>`;
 });
